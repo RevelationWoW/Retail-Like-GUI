@@ -7,7 +7,9 @@ This GUI is not made by me (OMGhixD) but merely is a collection of addons i've d
 Installation Guide.
 
 1.) Download latest from https://github.com/RevelationWoW/Retail-Like-GUI/releases/
+
 2.) Copy all content to YourWoWClient/Interface/AddOns
+
 3.) Open Wow.exe, login and confirm through Addon tab on character selection that it all installed correctly.
 
 Notice: You might have to tick "Load out of date AddOns"
