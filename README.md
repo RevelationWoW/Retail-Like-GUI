@@ -19,3 +19,5 @@ Enjoy!
 Previews:
 
 ![alt text]([https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png](https://i.imgur.com/mUuZSu1.jpeg) "Logo Title Text 1")
+
+![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
