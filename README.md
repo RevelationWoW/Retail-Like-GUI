@@ -6,7 +6,7 @@ This GUI is not made by me (OMGhixD) but merely is a collection of addons i've d
 
 Installation Guide.
 
-1.) Click the "<> code" button at the top and then "download zip
+1.) Click the "<> Code" button at the top and then "download zip"
 
 2.) Copy all content to YourWoWClient/Interface/AddOns
 
