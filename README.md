@@ -16,7 +16,7 @@ Notice: You might have to tick "Load out of date AddOns"
 
 Enjoy!
 
-Good to know commands:
+Useful commands:
 
 /rui edit - Allows you to edit the UI layout. Type the command again to save.
 
