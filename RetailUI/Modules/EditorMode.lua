@@ -3,6 +3,33 @@
     Licensed under the MIT license. See LICENSE file in the project root for details.
 ]]
 
+-- CUSTOM START
+-- Create a frame to handle the event.
+local eventFrame = CreateFrame("Frame")
+
+-- Register the event we care about.
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+-- Set the script to execute when the event fires.
+eventFrame:SetScript("OnEvent", function(self, event, ...)
+if event == "PLAYER_ENTERING_WORLD" then
+    -- Create a string with the desired color and a 1px shadow.
+    -- The format is |c followed by the color code in hexadecimal (AARRGGBB) for the text color
+    -- and |Tinterface/worldstateframes/deathicon:1:1|t to create a small shadow effect.
+    local legendaryColor = "|cFFFF8000"
+    local resetColor = "|r"
+    local shadow = "|Tinterface/worldstateframes/deathicon:1:1|t"
+    local message = shadow .. legendaryColor .. "[RUI] Type /rui edit to modify UI, repeat to confirm." .. resetColor
+
+    -- Print your welcome message to the chat.
+    print(message)
+
+    -- This line is crucial to ensure the message only shows once per login.
+    self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    end
+    end)
+-- CUSTOM END
+
 local RUI = LibStub('AceAddon-3.0'):GetAddon('RetailUI')
 local moduleName = 'EditorMode'
 local Module = RUI:NewModule(moduleName, 'AceConsole-3.0', 'AceHook-3.0', 'AceEvent-3.0')
