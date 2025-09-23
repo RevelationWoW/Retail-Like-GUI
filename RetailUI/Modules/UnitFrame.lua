@@ -168,6 +168,16 @@ local function ReplaceBlizzardPlayerFrame(frame)
     groupText:ClearAllPoints()
     groupText:SetPoint("CENTER", groupIndicatorFrame, 0, 0)
     groupText:SetJustifyH("CENTER")
+
+    -- Reset and position PlayerFrameAlternateManaBar
+    local alternateManaBar = PlayerFrameAlternateManaBar
+    if alternateManaBar then
+        alternateManaBar:ClearAllPoints()
+        alternateManaBar:SetParent(playerFrame)
+        alternateManaBar:SetPoint("CENTER", playerFrame, "BOTTOM", 40, 15)
+        alternateManaBar:SetFrameLevel(playerFrame:GetFrameLevel() + 3)
+        alternateManaBar:SetSize(80, 8)
+    end
 end
 
 local function ReplaceBlizzardRuneFrame()
@@ -692,6 +702,23 @@ local function FocusFrame_SetSmallSize(smallSize, onChange)
     ReplaceBlizzardTargetFrame(Module.focusFrame, FocusFrame)
 end
 
+local function setHealthBarColor(statusBar, unit)
+    if not unit or not UnitExists(unit) then
+        return
+    end
+
+    if UnitIsPlayer(unit) and not UnitIsUnit(unit, "player") then
+        local _, class = UnitClass(unit)
+        local color = RAID_CLASS_COLORS[class]
+
+        if color then
+            statusBar:SetStatusBarColor(color.r, color.g, color.b)
+            return
+        end
+    end
+    statusBar:SetStatusBarColor(0.48, 0.86, 0.15)
+end
+
 local function UnitFrameHealthBar_Update(statusBar, unit)
     if not statusBar or statusBar.lockValues then
         return
@@ -706,7 +733,7 @@ local function UnitFrameHealthBar_Update(statusBar, unit)
             end
         else
             if not statusBar.lockColor then
-                statusBar:SetStatusBarColor(0.48, 0.86, 0.15)
+                setHealthBarColor(statusBar, unit)
             end
         end
     end
@@ -756,7 +783,7 @@ local function UnitFrameManaBar_UpdateType(manaBar)
 end
 
 local function HealthBar_OnValueChanged(self, value)
-    self:SetStatusBarColor(0.48, 0.86, 0.15)
+    setHealthBarColor(self)
 end
 
 local function PetFrame_Update(self)
@@ -1036,14 +1063,42 @@ function Module:PLAYER_ENTERING_WORLD()
     }
 
     CheckSettingsExists(Module, widgets)
+
+    for i = 1, 4 do
+        local frame = _G["PartyMemberFrame" .. i]
+        if frame and frame.healthbar then
+            -- we need to catch the error here and ignore it sometimes the frame is already hooked
+            local success, error = pcall(self.HookScript, self, frame.healthbar, "OnValueChanged", function(self)
+                local unit = frame.unit
+                if UnitIsPlayer(unit) and not UnitIsUnit(unit, "player") then
+                    local _, class = UnitClass(unit)
+                    local color = RAID_CLASS_COLORS[class]
+                    if color then
+                        self:SetStatusBarColor(color.r, color.g, color.b)
+                    end
+                end
+            end)
+
+            local success, error = pcall(self.SecureHook, self, frame.healthbar, "SetStatusBarColor", function(bar, r, g, b)
+                local unit = frame.unit
+                if UnitIsPlayer(unit) and not UnitIsUnit(unit, "player") then
+                    local _, class = UnitClass(unit)
+                    local color = RAID_CLASS_COLORS[class]
+                    if color and (r ~= color.r or g ~= color.g or b ~= color.b) then
+                        bar:SetStatusBarColor(color.r, color.g, color.b)
+                    end
+                end
+            end)
+        end
+    end
 end
 
 function Module:LoadDefaultSettings()
-    RUI.DB.profile.widgets.player = { anchor = "TOPLEFT", posX = 5, posY = -20 }
-    RUI.DB.profile.widgets.target = { anchor = "TOPLEFT", posX = 215, posY = -20 }
-    RUI.DB.profile.widgets.focus = { anchor = "TOPLEFT", posX = 105, posY = -165 }
-    RUI.DB.profile.widgets.pet = { anchor = "TOPLEFT", posX = 90, posY = -105 }
-    RUI.DB.profile.widgets.targetOfTarget = { anchor = "TOPLEFT", posX = 370, posY = -80 }
+    RUI.DB.profile.widgets.player = { anchor = "TOPLEFT", posX = 5, posY = -20, scale = 1 }
+    RUI.DB.profile.widgets.target = { anchor = "TOPLEFT", posX = 215, posY = -20, scale = 1 }
+    RUI.DB.profile.widgets.focus = { anchor = "TOPLEFT", posX = 105, posY = -165, scale = 1 }
+    RUI.DB.profile.widgets.pet = { anchor = "TOPLEFT", posX = 90, posY = -105, scale = 1 }
+    RUI.DB.profile.widgets.targetOfTarget = { anchor = "TOPLEFT", posX = 370, posY = -80, scale = 1 }
 
     RUI.DB.profile.widgets['boss' .. 1] = { anchor = "TOPRIGHT", posX = -100, posY = -270 }
     for index = 2, 4 do
@@ -1054,22 +1109,49 @@ end
 function Module:UpdateWidgets()
     local widgetOptions = RUI.DB.profile.widgets.player
     self.playerFrame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)
+    if widgetOptions.scale == nil then
+        widgetOptions.scale = 1
+    end
+    PlayerFrame:SetScale(widgetOptions.scale)  -- self.playerFrame is not working, maybe due to object copying
 
     widgetOptions = RUI.DB.profile.widgets.target
+    if widgetOptions.scale == nil then
+        widgetOptions.scale = 1
+    end
     self.targetFrame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)
+    TargetFrame:SetScale(widgetOptions.scale)  -- self.targetFrame is not working, maybe due to object copying
 
     widgetOptions = RUI.DB.profile.widgets.focus
+    if widgetOptions.scale == nil then
+        widgetOptions.scale = 1
+    end
     self.focusFrame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)
+    FocusFrame:SetScale(widgetOptions.scale) -- self.focusFrame is not working, maybe due to object copying
 
     widgetOptions = RUI.DB.profile.widgets.pet
+    if widgetOptions.scale == nil then
+        widgetOptions.scale = 1
+    end
     self.petFrame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)
+    PetFrame:SetScale(widgetOptions.scale)  -- self.petFrame is not working, maybe due to object copying
 
     widgetOptions = RUI.DB.profile.widgets.targetOfTarget
+    if widgetOptions.scale == nil then
+        widgetOptions.scale = 1
+    end
     self.targetOfTargetFrame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)
+    TargetFrameToT:SetScale(widgetOptions.scale)  -- self.targetOfTargetFrame is not working, maybe due to object copying
 
     for index, frame in pairs(self.bossFrames) do
         if index > 1 then
-            frame:SetPoint("TOP", self.bossFrames[index - 1], "BOTTOM", 0, -2)
+            -- Calculate spacing based on boss frame scale to prevent overlapping/gaps
+            local boss1Options = RUI.DB.profile.widgets['boss1']
+            local spacing = -2
+            if boss1Options and boss1Options.scale then
+                -- Adjust spacing: larger scale = more spacing needed
+                spacing = -2 * boss1Options.scale
+            end
+            frame:SetPoint("TOP", self.bossFrames[index - 1], "BOTTOM", 0, spacing)
         else
             widgetOptions = RUI.DB.profile.widgets['boss' .. index]
             frame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)

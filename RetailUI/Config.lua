@@ -1,8 +1,6 @@
 --[[
     Copyright (c) Dmitriy. All rights reserved.
     Licensed under the MIT license. See LICENSE file in the project root for details.
-
-    RobbieRob: You can edit the layout in-game by simply typing "/rui edit" then do your edits and follow with "/rui edit" to save.
 ]]
 
 local RUI = LibStub('AceAddon-3.0'):GetAddon('RetailUI')
@@ -25,6 +23,14 @@ RUI.optionsSlash = {
                 end
             end,
             dialogHidden = true
+        },
+        scale = {
+            name = "Scale",
+            order = 1,
+            type = "execute",
+            func = function()
+            print("Use /rui edit to scale all of the frames")
+            end,
         },
         default = {
             name = "Load Default Settings",

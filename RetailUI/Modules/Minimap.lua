@@ -44,6 +44,17 @@ local function ReplaceBlizzardFrame(frame)
     minimapZoneButton:SetPoint("LEFT", minimapBorderTop, "LEFT", 7, 1)
     minimapZoneButton:SetWidth(108)
 
+    minimapZoneButton:EnableMouse(true)
+	minimapZoneButton:SetScript("OnMouseUp", function(self, button)
+    if button == "LeftButton" then
+		if WorldMapFrame:IsShown() then
+		    HideUIPanel(WorldMapFrame)
+		 else
+			ShowUIPanel(WorldMapFrame)
+		 end
+	end
+end)
+
     local minimapZoneText = MinimapZoneText
     minimapZoneText:SetAllPoints(minimapZoneButton)
     minimapZoneText:SetJustifyH("LEFT")
@@ -209,8 +220,15 @@ local function CreateMinimapBorderFrame(width, height)
 end
 
 local function RemoveBlizzardFrames()
+    if MiniMapWorldMapButton then
+        MiniMapWorldMapButton:Hide()
+        MiniMapWorldMapButton:UnregisterAllEvents()
+        MiniMapWorldMapButton:SetScript("OnClick", nil)
+        MiniMapWorldMapButton:SetScript("OnEnter", nil)
+        MiniMapWorldMapButton:SetScript("OnLeave", nil)
+    end
+
     local blizzFrames = {
-        MiniMapWorldMapButton,
         MiniMapTrackingIcon,
         MiniMapTrackingIconOverlay,
         MiniMapMailBorder,
@@ -328,12 +346,26 @@ function Module:PLAYER_ENTERING_WORLD()
 end
 
 function Module:LoadDefaultSettings()
-    RUI.DB.profile.widgets.minimap = { anchor = "TOPRIGHT", posX = 0, posY = 0 }
+    RUI.DB.profile.widgets.minimap = { anchor = "TOPRIGHT", posX = 0, posY = 0, scale = 1 }
 end
 
 function Module:UpdateWidgets()
     local widgetOptions = RUI.DB.profile.widgets.minimap
     self.minimapFrame:SetPoint(widgetOptions.anchor, widgetOptions.posX, widgetOptions.posY)
+    if widgetOptions.scale == nil then
+        widgetOptions.scale = 1
+    end
+    self.minimapFrame:SetScale(widgetOptions.scale)
+
+    -- Apply scaling to the actual Blizzard minimap frame
+    if Minimap then
+        Minimap:SetScale(widgetOptions.scale)
+    end
+
+    -- Also scale the border frame if it exists
+    if self.borderFrame then
+        self.borderFrame:SetScale(widgetOptions.scale)
+    end
 end
 
 function Module:ShowEditorTest()
